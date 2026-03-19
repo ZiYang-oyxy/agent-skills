@@ -1,0 +1,4 @@
+interface:
+  display_name: "NPU Doc Orchestrator"
+  short_description: "分发章节给 subagent 撰写 NPU 芯片系统文档"
+  default_prompt: "Use $npu-system-doc-orchestrator to draft an NPU chip soft-hardware system overview focused on software architecture, chip architecture, buses, interconnects, memory, and core coordination mechanisms by splitting chapter work across subagents and consolidating the final document."
