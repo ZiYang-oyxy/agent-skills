@@ -1,0 +1,4 @@
+interface:
+  display_name: "Conversation HTML Recap"
+  short_description: "Offline HTML recap for chats"
+  default_prompt: "Use this skill to turn the current conversation and its produced artifacts into a polished offline self-contained HTML recap page."

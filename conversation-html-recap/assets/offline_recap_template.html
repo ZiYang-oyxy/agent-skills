@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conversation Recap</title>
+  <style>
+    :root {
+      --bg: #f5f0e6;
+      --paper: #fffaf2;
+      --ink: #1e1a17;
+      --muted: #665e57;
+      --line: rgba(45, 34, 24, 0.14);
+      --accent: #b45a37;
+      --accent-2: #1e6a61;
+      --radius: 22px;
+      --mono: "SFMono-Regular", "Menlo", "Consolas", monospace;
+      --sans: "Trebuchet MS", "Segoe UI", "PingFang SC", "Hiragino Sans GB", sans-serif;
+      --serif: "Iowan Old Style", "Palatino Linotype", "Times New Roman", "Songti SC", serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--ink);
+      background: linear-gradient(180deg, #faf5eb 0%, #f1ebdd 100%);
+      line-height: 1.6;
+    }
+    .page {
+      width: min(1160px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 28px 0 60px;
+    }
+    .hero, .panel {
+      background: rgba(255, 250, 243, 0.92);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      padding: 24px;
+      box-shadow: 0 16px 36px rgba(48, 31, 17, 0.08);
+    }
+    .section { margin-top: 28px; }
+    h1, h2, h3 { margin: 0; line-height: 1.1; }
+    h1 { font-family: var(--serif); font-size: clamp(40px, 6vw, 72px); }
+    h2 { font-family: var(--serif); font-size: clamp(30px, 4vw, 46px); margin-bottom: 14px; }
+    p { margin: 0 0 12px; color: var(--muted); }
+    .grid { display: grid; gap: 18px; }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+      background: rgba(255, 252, 248, 0.9);
+    }
+    .path, code, pre {
+      font-family: var(--mono);
+    }
+    .path {
+      display: block;
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(30, 26, 23, 0.05);
+      font-size: 12px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    @media (max-width: 900px) {
+      .grid-3 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <p>Conversation Recap</p>
+      <h1>把一次工作会话整理成可演示的离线 HTML 页面</h1>
+      <p>用这个模板替换标题、摘要、卡片和嵌入内容，生成一份单文件、可直接打开演示的会话回顾页。</p>
+    </section>
+
+    <section class="section panel">
+      <h2>建议结构</h2>
+      <div class="grid grid-3">
+        <article class="card">
+          <h3>过程时间线</h3>
+          <p>展示问题如何被一步步转化和收敛。</p>
+        </article>
+        <article class="card">
+          <h3>关键判断</h3>
+          <p>强调转折点、结论与方法论。</p>
+        </article>
+        <article class="card">
+          <h3>最终产物</h3>
+          <p>展示真实输出文件，并嵌入摘要或全文。</p>
+          <span class="path">path/to/generated/artifact.md</span>
+        </article>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
