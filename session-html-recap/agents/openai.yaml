@@ -1,0 +1,7 @@
+interface:
+  display_name: "Session HTML Recap"
+  short_description: "Offline chat-style replay page for Codex sessions"
+  default_prompt: "Use $session-html-recap to turn the current or specified Codex CLI session into a polished offline self-contained HTML replay page that reads like the Codex chat flow."
+
+policy:
+  allow_implicit_invocation: false
