@@ -75,29 +75,26 @@ function defaultOutputPath(data) {
 }
 
 function render(template, data) {
-  const title = escapeHtml(data.titleCandidate || "Codex Session Replay");
+  const title = escapeHtml(data.titleCandidate || "Codex 会话回放");
   const subtitle = escapeHtml(
-    `按时间回放线程 ${data.sessionId ?? "unknown"} 的完整对话过程，包含用户提问、Codex 回应、工具调用和最终结果。`,
+    `按时间回放线程 ${data.sessionId ?? "未知"} 的完整对话过程，包含用户提问、Codex 回应、工具调用和最终结果。`,
   );
   const warningsHtml = data.warnings?.length
-    ? `<div class="warning-box"><h3>Warnings</h3>${data.warnings
+    ? `<div class="warning-box"><h3>注意事项</h3>${data.warnings
         .map((warning) => `<p>${escapeHtml(warning)}</p>`)
         .join("")}</div>`
     : "";
-  const summaryHtml = (data.summaryFacts ?? [])
-    .map((fact) => `<li>${escapeHtml(fact)}</li>`)
-    .join("");
   const badgesHtml = [
-    badge(`Thread ${data.sessionId ?? "unknown"}`),
-    badge(`Source ${data.sourceResolution ?? "unknown"}`),
-    badge(`CLI ${data.cliVersion ?? "unknown"}`),
-    badge(`Provider ${data.modelProvider ?? "unknown"}`),
+    badge(`线程 ${data.sessionId ?? "未知"}`),
+    badge(`来源 ${data.sourceResolution ?? "未知"}`),
+    badge(`命令行版本 ${data.cliVersion ?? "未知"}`),
+    badge(`模型提供方 ${data.modelProvider ?? "未知"}`),
   ].join("");
   const metaHtml = [
-    stat("Started", formatDateTime(data.startedAt)),
-    stat("Updated", formatDateTime(data.updatedAt)),
-    stat("Tools", String(data.stats?.toolCalls ?? 0)),
-    stat("Artifacts", String(data.stats?.artifacts ?? 0)),
+    stat("开始时间", formatDateTime(data.startedAt)),
+    stat("更新时间", formatDateTime(data.updatedAt)),
+    stat("工具调用", String(data.stats?.toolCalls ?? 0)),
+    stat("产物数量", String(data.stats?.artifacts ?? 0)),
   ].join("");
   const replayHtml = renderReplay(data);
   const summaryCardsHtml = (data.summaryFacts ?? [])
@@ -120,12 +117,12 @@ function render(template, data) {
             </article>`,
         )
         .join("")
-    : `<article class="artifact-card"><h3>No artifact paths detected</h3><p>The collector did not find stable output files worth surfacing in the replay rail.</p></article>`;
+    : `<article class="artifact-card"><h3>未发现产物路径</h3><p>采集器没有找到适合在回放页展示的稳定输出文件。</p></article>`;
   const detailsHtml = renderDetails(data);
 
   return template
     .replaceAll("__TITLE__", title)
-    .replaceAll("__HERO_KICKER__", "Codex Session Replay")
+    .replaceAll("__HERO_KICKER__", "Codex 会话回放")
     .replaceAll("__HERO_TITLE__", title)
     .replaceAll("__HERO_SUBTITLE__", subtitle)
     .replaceAll("__META_HTML__", metaHtml)
@@ -140,7 +137,7 @@ function render(template, data) {
 function renderReplay(data) {
   const replayItems = buildReplayItems(data);
   if (!replayItems.length) {
-    return `<article class="message-block assistant-block"><div class="message-shell"><div class="message-head"><span class="speaker">codex</span></div><div class="message-body"><p>No replayable events were captured from the selected session.</p></div></div></article>`;
+    return `<article class="message-block assistant-block"><div class="message-shell"><div class="message-head"><span class="speaker">助手</span></div><div class="message-body"><p>所选会话中没有可回放的事件。</p></div></div></article>`;
   }
 
   return replayItems
@@ -182,7 +179,7 @@ function buildReplayItems(data) {
 
 function renderMessageBlock(item) {
   const roleClass = item.role === "user" ? "user-block" : "assistant-block";
-  const speaker = item.role === "user" ? "user" : "codex";
+  const speaker = item.role === "user" ? "用户" : "助手";
   const phaseLabel = item.role === "assistant" ? phaseBadge(item.phase) : "";
   return `
     <article class="message-block ${roleClass}">
@@ -204,13 +201,13 @@ function renderToolBlock(item) {
     <article class="tool-block">
       <div class="tool-shell">
         <div class="tool-head">
-          <span class="speaker">tool</span>
-          <span class="tool-name">${escapeHtml(item.title ?? "Tool event")}</span>
+          <span class="speaker">工具</span>
+          <span class="tool-name">${escapeHtml(item.title ?? "工具事件")}</span>
           <span class="message-time">${escapeHtml(formatDateTime(item.timestamp))}</span>
         </div>
         <p class="tool-summary">${escapeHtml(item.summary ?? "")}</p>
         <details>
-          <summary>Show command and output</summary>
+          <summary>查看命令与输出</summary>
           ${argumentPreview}
           ${outputPreview}
         </details>
@@ -223,7 +220,7 @@ function renderDetails(data) {
 
   sections.push(`
     <details open>
-      <summary>Session metadata</summary>
+      <summary>会话元数据</summary>
       <pre>${escapeHtml(
         JSON.stringify(
           {
@@ -244,12 +241,12 @@ function renderDetails(data) {
   if (transcriptItems.length) {
     sections.push(`
       <details>
-        <summary>Transcript excerpts</summary>
+        <summary>对话摘录</summary>
         <pre>${escapeHtml(
           transcriptItems
             .map(
               (item) =>
-                `[${formatDateTime(item.timestamp)}] ${item.role.toUpperCase()} (${item.phase})\n${item.text}\n`,
+                `[${formatDateTime(item.timestamp)}] ${localizeRole(item.role)} (${localizePhase(item.phase)})\n${item.text}\n`,
             )
             .join("\n"),
         )}</pre>
@@ -260,12 +257,12 @@ function renderDetails(data) {
   if (evidenceItems.length) {
     sections.push(`
       <details>
-        <summary>Tool call excerpts</summary>
+        <summary>工具调用摘录</summary>
         <pre>${escapeHtml(
           evidenceItems
             .map((item) => {
-              const args = item.details?.arguments ? `Arguments:\n${item.details.arguments}\n\n` : "";
-              const output = item.details?.output ? `Output:\n${item.details.output}\n` : "";
+              const args = item.details?.arguments ? `参数:\n${item.details.arguments}\n\n` : "";
+              const output = item.details?.output ? `输出:\n${item.details.output}\n` : "";
               return `${item.title}\n${args}${output}`.trim();
             })
             .join("\n\n---\n\n"),
@@ -292,9 +289,33 @@ function phaseBadge(value) {
   if (!value) {
     return "";
   }
-  const label = value === "final" ? "final" : value === "commentary" ? "commentary" : value;
+  const label = localizePhase(value);
   return `<span class="phase-tag">${escapeHtml(label)}</span>`;
 }
+
+function localizeRole(value) {
+  if (value === "user") {
+    return "用户";
+  }
+  if (value === "assistant") {
+    return "助手";
+  }
+  return value ?? "未知";
+}
+
+function localizePhase(value) {
+  if (value === "final" || value === "final_answer") {
+    return "最终答复";
+  }
+  if (value === "commentary") {
+    return "过程说明";
+  }
+  if (value === "message") {
+    return "消息";
+  }
+  return value ?? "未知";
+}
+
 
 function renderMarkdown(text) {
   const lines = String(text ?? "").replace(/\r\n/g, "\n").split("\n");

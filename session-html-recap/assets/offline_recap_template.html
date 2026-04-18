@@ -100,7 +100,8 @@
     h1 {
       font-family: var(--serif);
       font-size: clamp(36px, 5vw, 64px);
-      max-width: 12ch;
+      max-width: min(20ch, 100%);
+      text-wrap: balance;
     }
 
     h2 {
@@ -168,6 +169,17 @@
       padding: 26px;
     }
 
+    .conversation-panel > h2,
+    .conversation-panel > p,
+    .conversation-panel > .warning-box,
+    .conversation-panel > .badge-row,
+    .conversation-panel > .control-bar,
+    .conversation-panel > .replay-feed {
+      max-width: 980px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
     .summary-grid,
     .artifact-rail,
     .details-list {
@@ -179,6 +191,7 @@
       display: grid;
       gap: 16px;
       margin-top: 18px;
+      width: 100%;
     }
 
     .message-block,
@@ -210,7 +223,7 @@
     }
 
     .message-shell {
-      width: min(760px, 100%);
+      width: min(860px, 100%);
     }
 
     .user-block .message-shell {
@@ -232,7 +245,7 @@
     }
 
     .tool-shell {
-      width: min(660px, calc(100% - 40px));
+      width: min(760px, calc(100% - 40px));
       margin-right: auto;
       background:
         linear-gradient(90deg, rgba(23, 92, 84, 0.06), transparent 36%),
@@ -312,6 +325,40 @@
       gap: 8px;
       flex-wrap: wrap;
       margin-top: 12px;
+    }
+
+    .control-bar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .toggle-button {
+      appearance: none;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      min-height: 42px;
+      padding: 0 16px;
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--ink);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 120ms ease, background-color 120ms ease, border-color 120ms ease;
+    }
+
+    .toggle-button:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(23, 92, 84, 0.24);
+    }
+
+    .toggle-button[aria-pressed="true"] {
+      background: rgba(23, 92, 84, 0.12);
+      border-color: rgba(23, 92, 84, 0.28);
+      color: var(--accent-2);
     }
 
     .badge {
@@ -513,6 +560,14 @@
       font-size: clamp(22px, 2vw, 30px);
     }
 
+    body.tools-hidden .tool-block {
+      display: none;
+    }
+
+    body.secondary-hidden .secondary-panel {
+      display: none;
+    }
+
     .footer-note {
       margin-top: 28px;
       text-align: center;
@@ -548,30 +603,89 @@
 
     <section class="section panel">
       <section class="conversation-panel">
-        <h2>Conversation Replay</h2>
+        <h2>会话回放</h2>
         <p>按照会话发生顺序重放提问、回应和工具执行，尽量接近 Codex 聊天流的阅读体验。</p>
         __WARNINGS_HTML__
         <div class="badge-row">__BADGES_HTML__</div>
+        <div class="control-bar" aria-label="显示控制">
+          <button
+            class="toggle-button"
+            type="button"
+            data-toggle="tools"
+            aria-pressed="false"
+          >
+            显示工具对话
+          </button>
+          <button
+            class="toggle-button"
+            type="button"
+            data-toggle="secondary"
+            aria-pressed="false"
+          >
+            显示会话详情
+          </button>
+        </div>
         <div class="replay-feed">__REPLAY_HTML__</div>
       </section>
     </section>
 
-    <section class="section panel sidebar-panel">
-      <h2>Session Snapshot</h2>
+    <section class="section panel sidebar-panel secondary-panel" data-panel-group="secondary">
+      <h2>会话概览</h2>
       <div class="summary-grid">__SUMMARY_HTML__</div>
     </section>
 
-    <section class="section panel sidebar-panel">
-      <h2>Artifacts</h2>
+    <section class="section panel sidebar-panel secondary-panel" data-panel-group="secondary">
+      <h2>产物文件</h2>
       <div class="artifact-rail">__ARTIFACT_RAIL_HTML__</div>
     </section>
 
-    <section class="section panel">
-      <h2>Deep Details</h2>
+    <section class="section panel secondary-panel" data-panel-group="secondary">
+      <h2>详细记录</h2>
       <div class="details-list">__DETAILS_HTML__</div>
     </section>
 
-    <p class="footer-note">Generated locally from Codex session data. This page is self-contained and offline-friendly.</p>
+    <p class="footer-note">本页基于本地 Codex 会话数据生成，内容已内嵌，适合离线查看。</p>
   </div>
+  <script>
+    (() => {
+      const body = document.body;
+      const toggles = {
+        tools: {
+          hiddenClass: "tools-hidden",
+          button: document.querySelector('[data-toggle="tools"]'),
+          labels: {
+            hidden: "显示工具对话",
+            shown: "隐藏工具对话",
+          },
+        },
+        secondary: {
+          hiddenClass: "secondary-hidden",
+          button: document.querySelector('[data-toggle="secondary"]'),
+          labels: {
+            hidden: "显示会话详情",
+            shown: "隐藏会话详情",
+          },
+        },
+      };
+
+      function syncToggle(toggle) {
+        if (!toggle.button) {
+          return;
+        }
+        const isShown = !body.classList.contains(toggle.hiddenClass);
+        toggle.button.setAttribute("aria-pressed", String(isShown));
+        toggle.button.textContent = isShown ? toggle.labels.shown : toggle.labels.hidden;
+      }
+
+      Object.values(toggles).forEach((toggle) => {
+        body.classList.add(toggle.hiddenClass);
+        syncToggle(toggle);
+        toggle.button?.addEventListener("click", () => {
+          body.classList.toggle(toggle.hiddenClass);
+          syncToggle(toggle);
+        });
+      });
+    })();
+  </script>
 </body>
 </html>
